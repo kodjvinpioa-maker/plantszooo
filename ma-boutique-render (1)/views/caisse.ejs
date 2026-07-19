@@ -1,0 +1,114 @@
+<% layout('layout') -%>
+<% var currentPath = '/caisse'; %>
+
+<h1 class="page-title"><i class="fas fa-wallet"></i> Caisse</h1>
+
+<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);max-width:500px;">
+  <div class="stat-card" style="border-left-color:var(--vert-succes);">
+    <div class="stat-icon"><i class="fas fa-wallet" style="color:var(--vert-succes);"></i></div>
+    <div class="stat-value" style="color:var(--vert-succes);"><%= solde.toLocaleString('fr-FR') %> FCFA</div>
+    <div class="stat-label">Solde actuel</div>
+  </div>
+</div>
+
+<% if (user.role === 'admin') { %>
+<div class="card" style="max-width:600px;">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-cog"></i> Opérations manuelles</span>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <form method="POST" action="/caisse/entree" class="flex-1" style="min-width:250px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-group">
+        <label class="form-label">Entrée manuelle (FCFA)</label>
+        <input type="number" name="montant" class="form-control" min="1" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motif</label>
+        <input type="text" name="motif" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Commentaire</label>
+        <input type="text" name="commentaire" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-success btn-block"><i class="fas fa-arrow-down"></i> Entrée</button>
+    </form>
+
+    <form method="POST" action="/caisse/sortie" class="flex-1" style="min-width:250px;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-group">
+        <label class="form-label">Sortie manuelle (FCFA)</label>
+        <input type="number" name="montant" class="form-control" min="1" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motif</label>
+        <input type="text" name="motif" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Commentaire</label>
+        <input type="text" name="commentaire" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-danger btn-block"><i class="fas fa-arrow-up"></i> Sortie</button>
+    </form>
+  </div>
+</div>
+
+<% if (clotures && clotures.length > 0) { %>
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-clock"></i> Clôtures automatiques</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Montant</th><th>Motif</th><th>Utilisateur</th></tr>
+      </thead>
+      <tbody>
+        <% clotures.forEach(c => { %>
+        <tr>
+          <td><%= new Date(c.date_mouvement).toLocaleString('fr-FR') %></td>
+          <td><span class="badge badge-<%= c.type === 'entree' ? 'success' : 'danger' %>"><%= c.type %></span></td>
+          <td><%= c.montant.toLocaleString('fr-FR') %> FCFA</td>
+          <td><%= c.motif %></td>
+          <td><%= c.user_email || 'Système' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+<% } %>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-history"></i> Historique caisse</span>
+    <a href="/historique-caisse" class="btn btn-sm btn-outline">Voir tout</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Montant</th><th>Motif</th><th>Vente liée</th><th>Utilisateur</th></tr>
+      </thead>
+      <tbody>
+        <% historique.forEach(h => { %>
+        <tr>
+          <td><%= new Date(h.date_mouvement).toLocaleString('fr-FR') %></td>
+          <td>
+            <span class="badge badge-<%= h.type === 'entree' ? 'success' : 'danger' %>">
+              <i class="fas fa-arrow-<%= h.type === 'entree' ? 'down' : 'up' %>"></i> <%= h.type %>
+            </span>
+          </td>
+          <td><strong><%= h.montant.toLocaleString('fr-FR') %> FCFA</strong></td>
+          <td><%= h.motif %></td>
+          <td><%= h.est_lie_vente ? 'Oui #' + h.vente_id : '—' %></td>
+          <td><%= h.user_email || '—' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (historique.length === 0) { %>
+    <p class="text-center" style="color:#777;padding:2rem;">Aucun mouvement enregistré.</p>
+  <% } %>
+</div>

@@ -1,0 +1,107 @@
+<% layout('layout') -%>
+<% var currentPath = '/rapports'; %>
+
+<h1 class="page-title"><i class="fas fa-chart-line"></i> Rapports</h1>
+
+<div class="card" style="max-width:700px;">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-filter"></i> Filtre période</span>
+    <a href="/rapports/export" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Export CSV</a>
+  </div>
+  <form method="GET" action="/rapports">
+    <div class="d-flex gap-2 flex-wrap align-center">
+      <select name="periode" class="form-select" style="max-width:200px;" onchange="this.form.submit()">
+        <option value="jour" <%= periode === 'jour' ? 'selected' : '' %>>Aujourd'hui</option>
+        <option value="semaine" <%= periode === 'semaine' ? 'selected' : '' %>>7 derniers jours</option>
+        <option value="mois" <%= periode === 'mois' ? 'selected' : '' %>>30 derniers jours</option>
+        <option value="perso" <%= periode === 'perso' ? 'selected' : '' %>>Personnalisé</option>
+      </select>
+      <% if (periode === 'perso') { %>
+      <input type="date" name="debut" class="form-control" value="<%= debut %>" style="max-width:150px;">
+      <input type="date" name="fin" class="form-control" value="<%= fin %>" style="max-width:150px;">
+      <button type="submit" class="btn btn-primary btn-sm">Appliquer</button>
+      <% } %>
+    </div>
+  </form>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card" style="border-left-color:var(--vert-principal);">
+    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+    <div class="stat-value"><%= ca.toLocaleString('fr-FR') %> FCFA</div>
+    <div class="stat-label">Chiffre d'affaires</div>
+  </div>
+  <div class="stat-card" style="border-left-color:var(--vert-clair);">
+    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+    <div class="stat-value"><%= nbVentes %></div>
+    <div class="stat-label">Nombre de ventes</div>
+  </div>
+  <div class="stat-card" style="border-left-color:var(--vert-succes);">
+    <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+    <div class="stat-value"><%= benefice.toLocaleString('fr-FR') %> FCFA</div>
+    <div class="stat-label">Bénéfice brut</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-chart-bar"></i> Évolution du CA</span>
+  </div>
+  <canvas id="caChart" height="100"></canvas>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-list"></i> Détail des ventes</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Date</th><th>Produit</th><th>Qté</th><th>Prix unit.</th><th>Total</th><th>Commentaire</th></tr>
+      </thead>
+      <tbody>
+        <% ventes.forEach(v => { %>
+        <tr>
+          <td><%= new Date(v.date_mouvement).toLocaleDateString('fr-FR') %></td>
+          <td><strong><%= v.produit_nom %></strong></td>
+          <td><%= v.quantite %></td>
+          <td><%= v.prix_vente_effectif.toLocaleString('fr-FR') %> FCFA</td>
+          <td><strong><%= (v.quantite * v.prix_vente_effectif).toLocaleString('fr-FR') %> FCFA</strong></td>
+          <td><%= v.commentaire || '—' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (ventes.length === 0) { %>
+    <p class="text-center" style="color:#777;padding:2rem;">Aucune vente sur cette période.</p>
+  <% } %>
+</div>
+
+<script>
+  const ctx = document.getElementById('caChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: <%- JSON.stringify(labels.map(d => new Date(d).toLocaleDateString('fr-FR', {day:'numeric', month:'short'}))) %>,
+      datasets: [{
+        label: 'CA (FCFA)',
+        data: <%= JSON.stringify(data) %>,
+        borderColor: '#4A7C59',
+        backgroundColor: 'rgba(74,124,89,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#7CB342',
+        pointRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>
