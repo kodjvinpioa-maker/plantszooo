@@ -1,0 +1,71 @@
+<% layout('layout') -%>
+<% var currentPath = '/produits'; %>
+
+<h1 class="page-title"><i class="fas fa-boxes"></i> Produits</h1>
+
+<div class="card">
+  <div class="card-header" style="flex-wrap:wrap;gap:0.8rem;">
+    <span class="card-title">Liste des produits</span>
+    <div class="d-flex gap-2 align-center flex-wrap" style="flex:1;justify-content:flex-end;">
+      <form method="GET" action="/produits" class="d-flex gap-1" style="max-width:300px;width:100%;">
+        <input type="text" name="q" class="form-control" placeholder="Rechercher..." value="<%= q %>">
+        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
+      </form>
+      <a href="/produits/nouveau" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Nouveau</a>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Référence</th>
+          <th>Nom</th>
+          <th>Stock</th>
+          <th>Seuil</th>
+          <th>Prix achat</th>
+          <th>Prix vente</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% produits.forEach(p => { %>
+        <tr>
+          <td>
+            <% if (p.image) { %>
+              <img src="<%= p.image %>" class="product-img" alt="<%= p.nom %>">
+            <% } else { %>
+              <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#999;"><i class="fas fa-image"></i></div>
+            <% } %>
+          </td>
+          <td><code><%= p.reference %></code></td>
+          <td><strong><%= p.nom %></strong></td>
+          <td>
+            <% if (p.alerte) { %>
+              <span class="badge badge-danger"><i class="fas fa-exclamation-circle"></i> <%= p.stock %></span>
+            <% } else { %>
+              <span class="badge badge-success"><%= p.stock %></span>
+            <% } %>
+          </td>
+          <td><%= p.seuil_alerte %></td>
+          <td><%= p.prix_achat.toLocaleString('fr-FR') %> FCFA</td>
+          <td><%= p.prix_vente.toLocaleString('fr-FR') %> FCFA</td>
+          <td>
+            <div class="d-flex gap-1 flex-wrap">
+              <a href="/produits/<%= p.id %>/modifier" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
+              <form method="POST" action="/produits/<%= p.id %>/supprimer" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (produits.length === 0) { %>
+    <p class="text-center" style="color:#777;padding:2rem;"><i class="fas fa-inbox"></i> Aucun produit trouvé.</p>
+  <% } %>
+</div>
