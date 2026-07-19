@@ -1,0 +1,44 @@
+<% layout('layout') -%>
+<% var hideNav = true; %>
+<% var currentPath = '/login'; %>
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">🌿 MaBoutique</div>
+    <p class="login-subtitle">Gestion de stock & caisse</p>
+
+    <% if (typeof error404 !== 'undefined' && error404) { %>
+      <div class="alert alert-error mb-2">
+        <i class="fas fa-exclamation-triangle"></i>
+        Page introuvable. Redirection vers l'accueil.
+      </div>
+    <% } %>
+
+    <% if (flash && flash.type === 'error') { %>
+      <div class="alert alert-error mb-2">
+        <i class="fas fa-exclamation-circle"></i> <%= flash.message %>
+      </div>
+    <% } %>
+
+    <form action="/login" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" placeholder="admin@example.com" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">
+        <i class="fas fa-sign-in-alt"></i> Se connecter
+      </button>
+    </form>
+
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,0.08);font-size:0.85rem;color:#777;">
+      <p class="mb-1"><strong>Comptes de test :</strong></p>
+      <p class="mb-1">Admin → <code>admin@example.com</code> / <code>admin123</code></p>
+      <p>Collaborateur → <code>collab@example.com</code> / <code>collab123</code></p>
+    </div>
+  </div>
+</div>
